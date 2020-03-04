@@ -300,22 +300,40 @@ def compress_iso(infile, outfile, compression_level):
 
 #----------------------------------------------------------------------------
 
-def getFile(extension,path_):
-    try:
-        if path_:
-            path=path_
-        else:
+def getFile(extension,path_,RECURSIVE):
+    if RECURSIVE == True:
+        try:
+            if path_:
+                path=path_
+            else:
+                path = os.getcwd()
+        except:
             path = os.getcwd()
-    except:
-        path = os.getcwd()
 
-    extension_len=len(extension)
-    files_list = []
-    for root, directories, filenames in os.walk(path):
-        for filename in filenames:
-            if filename[-extension_len:] == extension:
-                files_list.append({"root":root,"filename":filename})
-    return len(files_list),files_list
+        extension_len=len(extension)
+        files_list = []
+        for root, directories, filenames in os.walk(path):
+            for filename in filenames:
+                if filename[-extension_len:] == extension:
+                    files_list.append({"root":root,"filename":filename})
+        return len(files_list),files_list
+    else:
+        try:
+            if path_:
+                path=path_
+            else:
+                path = os.getcwd()
+        except:
+            path = os.getcwd()
+
+        extension_len=len(extension)
+        files_list = []
+        for f in listdir(path):
+            if isfile(join(path, f)):
+                if f[-extension_len:] == extension:
+                    files_list.append({"root":path,"filename":f})
+        return len(files_list),files_list
+
 
 #Constants
 LANGUAGE = 'es'
@@ -446,8 +464,8 @@ else:
         if arg == "-d":     #Remove files after compress
             REMOVE = True
 
-def selectFiles(extension,INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES):
-    nfiles,files =getFile(extension,INPUT_PATH)
+def selectFiles(extension,INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES,RECURSIVE):
+    nfiles,files =getFile(extension,INPUT_PATH,RECURSIVE)
     printInfo(output_text[LANGUAGE]["INFO_item_list_found"]+" "+str(nfiles),VERBOSE_MODE,"info")
 
     if SELECT_FILES:
@@ -473,10 +491,10 @@ def selectFiles(extension,INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES):
 
 def main(REMOVE,COMPRESSLVL,RECURSIVE,SELECT_FILES,VERBOSE_MODE,INPUT_PATH,OUTPUT_PATH):
     if DECOMPRESS == False:
-        files = selectFiles("iso",INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES)
+        files = selectFiles("iso",INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES,RECURSIVE)
         convert(files,REMOVE,COMPRESSLVL,"cso","iso",OUTPUT_PATH,DECOMPRESS)
     else:
-        files = selectFiles("cso",INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES)
+        files = selectFiles("cso",INPUT_PATH,VERBOSE_MODE,LANGUAGE,SELECT_FILES,RECURSIVE)
         convert(files,REMOVE,COMPRESSLVL,"iso","cso",OUTPUT_PATH,DECOMPRESS)
 
 if RUN == True:
